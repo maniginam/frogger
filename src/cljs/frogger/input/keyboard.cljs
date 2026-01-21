@@ -1,5 +1,6 @@
 (ns frogger.input.keyboard
-  "Keyboard input handling for the game.")
+  "Keyboard input handling for the game."
+  (:require [frogger.input.touch :as touch]))
 
 (defonce pressed-keys (atom #{}))
 (defonce input-callback (atom nil))
@@ -39,14 +40,19 @@
         (callback {:type :keyup :action action})))))
 
 (defn get-direction-input
-  "Returns the current direction input, or nil if none."
+  "Returns the current direction input, or nil if none.
+   Checks both keyboard and touch inputs."
   []
-  (cond
-    (@pressed-keys :up) :up
-    (@pressed-keys :down) :down
-    (@pressed-keys :left) :left
-    (@pressed-keys :right) :right
-    :else nil))
+  (let [touch-dir (touch/get-touch-direction)]
+    (when touch-dir
+      (touch/clear-touch-direction!))
+    (or touch-dir
+        (cond
+          (@pressed-keys :up) :up
+          (@pressed-keys :down) :down
+          (@pressed-keys :left) :left
+          (@pressed-keys :right) :right
+          :else nil))))
 
 (defn ability-pressed?
   "Returns true if the ability key is pressed."
@@ -70,16 +76,18 @@
   (reset! input-callback callback))
 
 (defn setup-keyboard-listeners!
-  "Sets up keyboard event listeners."
+  "Sets up keyboard and touch event listeners."
   []
   (.addEventListener js/window "keydown" handle-keydown)
-  (.addEventListener js/window "keyup" handle-keyup))
+  (.addEventListener js/window "keyup" handle-keyup)
+  (touch/setup-touch-listeners!))
 
 (defn teardown-keyboard-listeners!
-  "Removes keyboard event listeners."
+  "Removes keyboard and touch event listeners."
   []
   (.removeEventListener js/window "keydown" handle-keydown)
-  (.removeEventListener js/window "keyup" handle-keyup))
+  (.removeEventListener js/window "keyup" handle-keyup)
+  (touch/teardown-touch-listeners!))
 
 (defn clear-pressed-keys!
   "Clears all pressed keys."
