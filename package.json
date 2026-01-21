@@ -1,0 +1,15 @@
+{
+  "name": "frogger",
+  "version": "1.0.0",
+  "description": "A Frogger-like game built with ClojureScript",
+  "scripts": {
+    "watch": "shadow-cljs watch app",
+    "release": "shadow-cljs release app",
+    "test": "shadow-cljs compile test"
+  },
+  "devDependencies": {
+    "shadow-cljs": "^2.26.0"
+  },
+  "author": "",
+  "license": "MIT"
+}

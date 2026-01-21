@@ -1,0 +1,19 @@
+# Dependencies
+node_modules/
+
+# Shadow-cljs
+.shadow-cljs/
+
+# Build output (keep for deployment)
+# resources/public/js/cljs-runtime/
+
+# IDE
+.idea/
+*.iml
+.vscode/
+
+# OS
+.DS_Store
+
+# Claude
+.claude/
