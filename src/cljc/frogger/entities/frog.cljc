@@ -146,7 +146,7 @@
               :reached-goal? false}))
 
 (defn reset-position
-  "Resets frog to starting position."
+  "Resets frog to starting position with brief invincibility."
   [frog]
   (assoc frog
          :x (- (/ state/canvas-width 2) (/ state/cell-size 2))
@@ -155,7 +155,9 @@
          :direction nil
          :on-platform? false
          :dead? false
-         :reached-goal? false))
+         :reached-goal? false
+         :invincible? true
+         :invincibility-remaining default-invincibility-duration))
 
 (defn apply-platform-velocity
   "Applies platform velocity to frog position."

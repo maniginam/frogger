@@ -22,6 +22,8 @@
           (update :score + hop-score)))
     game-state))
 
+(def respawn-invincibility-duration 1000)
+
 (defn- reset-frog-to-checkpoint-or-start
   "Resets frog position to the last checkpoint if dying in water, otherwise to start."
   [frog checkpoints cause]
@@ -36,7 +38,9 @@
              :direction nil
              :on-platform? false
              :dead? false
-             :reached-goal? false)
+             :reached-goal? false
+             :invincible? true
+             :invincibility-remaining respawn-invincibility-duration)
       (frog/reset-position frog))
     ;; Died from obstacle/timeout or no checkpoint - respawn at start
     (frog/reset-position frog)))
