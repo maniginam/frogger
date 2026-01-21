@@ -52,30 +52,39 @@
   (when-let [overlay (.getElementById js/document "pause-overlay")]
     (.remove overlay)))
 
-(defn show-level-complete! [level score]
-  (let [overlay (.createElement js/document "div")]
-    (set! (.-id overlay) "level-complete-overlay")
-    (set! (.-innerHTML overlay)
-          (str "<div class='level-content'>
-                  <h2>Level " level " Complete!</h2>
-                  <p>Score: " score "</p>
-                </div>"))
-    (set! (.-style.cssText (.-style overlay))
-          "position: absolute;
-           top: 0;
-           left: 0;
-           width: 100%;
-           height: 100%;
-           background: rgba(0,100,0,0.8);
-           display: flex;
-           justify-content: center;
-           align-items: center;
-           color: white;
-           font-family: inherit;
-           z-index: 100;")
-    (when-let [app (.getElementById js/document "app")]
-      (.appendChild app overlay))
-    (js/setTimeout hide-level-complete! 2000)))
+(defn show-level-complete!
+  "Shows level complete overlay. Can be called with just level and score,
+   or with level-name for theme-specific names."
+  ([level score]
+   (show-level-complete! level score nil))
+  ([level score level-name]
+   (let [overlay (.createElement js/document "div")
+         display-name (or level-name (str "Level " level))]
+     (set! (.-id overlay) "level-complete-overlay")
+     (set! (.-innerHTML overlay)
+           (str "<div class='level-content'>
+                   <div class='level-up-icon'>★</div>
+                   <h2>LEVEL UP!</h2>
+                   <h3>" display-name "</h3>
+                   <p class='level-score'>Score: " score "</p>
+                 </div>"))
+     (set! (.-style.cssText (.-style overlay))
+           "position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, rgba(0,100,0,0.9) 0%, rgba(0,60,30,0.95) 100%);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            color: white;
+            font-family: inherit;
+            z-index: 100;
+            animation: fadeIn 0.3s ease-out;")
+     (when-let [app (.getElementById js/document "app")]
+       (.appendChild app overlay))
+     (js/setTimeout hide-level-complete! 2500))))
 
 (defn hide-level-complete! []
   (when-let [overlay (.getElementById js/document "level-complete-overlay")]

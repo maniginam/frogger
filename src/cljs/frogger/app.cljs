@@ -10,6 +10,7 @@
             [frogger.ui.hud :as hud]
             [frogger.ui.screens :as screens]
             [frogger.game.events :as events]
+            [frogger.game.levels :as levels]
             [frogger.audio.system :as audio]))
 
 (defonce app-state (atom {:screen :menu
@@ -109,7 +110,11 @@
                  ;; Level complete
                  (when (and (not= (:level old-state) (:level new-state))
                             (> (:level new-state) (:level old-state)))
-                   (audio/play-level-complete-sound))
+                   (let [theme-id (:theme-id new-state)
+                        new-level (:level new-state)
+                        level-name (levels/get-level-name theme-id new-level)]
+                    (audio/play-level-complete-sound)
+                    (screens/show-level-complete! new-level (:score new-state) level-name)))
                  ;; Frog hopped
                  (when (frog-moved? old-state new-state)
                    (audio/play-hop-sound (:character-id new-state)))))))

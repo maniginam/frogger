@@ -74,14 +74,21 @@
   [game-state _]
   (let [current-frog (:frog game-state)
         score-multiplier (frog/get-score-multiplier current-frog)
-        level-score (rules/calculate-level-complete-score score-multiplier)]
+        level-score (rules/calculate-level-complete-score score-multiplier)
+        new-level (inc (:level game-state))]
     (-> game-state
         (update :score + level-score)
-        (update :level inc)
+        (assoc :level new-level)
         (assoc :time-remaining 60000)
+        (assoc :show-level-up? true)
+        (assoc :level-up-time (js/Date.now))
         (update :goals goal/reset-goals)
         (update :checkpoints checkpoint/reset-checkpoints)
         (update :frog frog/reset-position))))
+
+(defmethod handle-event :dismiss-level-up
+  [game-state _]
+  (assoc game-state :show-level-up? false))
 
 (defmethod handle-event :game-over
   [game-state _]

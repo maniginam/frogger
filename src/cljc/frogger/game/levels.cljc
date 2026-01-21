@@ -5,7 +5,8 @@
             [frogger.entities.platform :as platform]
             [frogger.entities.goal :as goal]
             [frogger.entities.checkpoint :as checkpoint]
-            [frogger.game.rules :as rules]))
+            [frogger.game.rules :as rules]
+            [frogger.themes.registry :as themes]))
 
 (def base-obstacle-speed 80)
 (def base-platform-speed 50)
@@ -96,25 +97,29 @@
   [game-state]
   (apply-level-to-state game-state (inc (:level game-state))))
 
-(def level-configs
-  "Level-specific configurations for variety."
-  {1 {:name "Classic Crossing"
-      :time-limit 60000}
-   2 {:name "Rush Hour"
-      :time-limit 55000
-      :obstacle-density 1.2}
-   3 {:name "River Rapids"
-      :time-limit 50000
-      :platform-speed 1.3}
-   4 {:name "Night Mode"
-      :time-limit 55000
-      :visibility :low}
-   5 {:name "The Gauntlet"
-      :time-limit 45000
-      :obstacle-density 1.5
-      :platform-speed 1.2}})
-
 (defn get-level-config
-  "Gets configuration for a specific level."
-  [level]
-  (get level-configs level (get level-configs 1)))
+  "Gets configuration for a specific level from theme or defaults."
+  ([level]
+   (get-level-config level :forest))
+  ([level theme-id]
+   (if-let [theme-config (themes/get-level-config theme-id level)]
+     theme-config
+     ;; Fallback defaults
+     {:name (str "Level " level)
+      :time-limit (max 30000 (- 60000 (* 5000 (dec level))))
+      :speed-mult (+ 1.0 (* 0.15 (dec level)))})))
+
+(defn get-level-name
+  "Gets the name of the current level for a theme."
+  [theme-id level]
+  (:name (get-level-config level theme-id)))
+
+(defn get-level-time-limit
+  "Gets the time limit for a level in a theme."
+  [theme-id level]
+  (:time-limit (get-level-config level theme-id)))
+
+(defn get-level-speed-multiplier
+  "Gets the speed multiplier for a level in a theme."
+  [theme-id level]
+  (:speed-mult (get-level-config level theme-id)))

@@ -79,15 +79,17 @@
   [goals]
   (mapv #(assoc % :reached? false) goals))
 
-(defn all-goals-reached?
-  "Returns true if all goals have been reached."
-  [goals]
-  (every? :reached? goals))
+(def goals-required-to-advance 3)
 
 (defn count-reached-goals
   "Returns the number of goals that have been reached."
   [goals]
   (count (filter :reached? goals)))
+
+(defn all-goals-reached?
+  "Returns true if enough goals have been reached to advance (3 frogs)."
+  [goals]
+  (>= (count-reached-goals goals) goals-required-to-advance))
 
 (defn find-unreached-goal
   "Finds the first unreached goal, or nil if all reached."

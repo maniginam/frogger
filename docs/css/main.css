@@ -345,6 +345,58 @@ button:hover {
     margin-bottom: 10px;
 }
 
+/* Level Complete Overlay */
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+@keyframes levelUpBounce {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.1); }
+}
+
+@keyframes starPulse {
+    0%, 100% { transform: scale(1) rotate(0deg); text-shadow: 0 0 20px #fbbf24; }
+    50% { transform: scale(1.2) rotate(15deg); text-shadow: 0 0 40px #fbbf24, 0 0 60px #fbbf24; }
+}
+
+#level-complete-overlay {
+    animation: fadeIn 0.3s ease-out;
+}
+
+#level-complete-overlay .level-content {
+    text-align: center;
+    animation: levelUpBounce 0.5s ease-out;
+}
+
+#level-complete-overlay .level-up-icon {
+    font-size: 4rem;
+    color: #fbbf24;
+    margin-bottom: 10px;
+    animation: starPulse 1s ease-in-out infinite;
+}
+
+#level-complete-overlay h2 {
+    font-size: 2rem;
+    color: #4ade80;
+    margin-bottom: 10px;
+    text-shadow: 0 0 30px rgba(74, 222, 128, 0.8);
+}
+
+#level-complete-overlay h3 {
+    font-size: 1.2rem;
+    color: #a78bfa;
+    margin-bottom: 15px;
+    text-shadow: 0 0 20px rgba(167, 139, 250, 0.6);
+}
+
+#level-complete-overlay .level-score {
+    font-size: 1rem;
+    color: #fbbf24;
+    text-shadow: 0 0 15px rgba(251, 191, 36, 0.5);
+}
+
 #pause-overlay {
     position: absolute;
     top: 50%;

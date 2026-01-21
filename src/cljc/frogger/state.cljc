@@ -26,6 +26,8 @@
    :level 1
    :time-remaining 60000
    :paused? false
+   :show-level-up? false
+   :level-up-time nil
    :input {:direction nil :ability-pressed? false}})
 
 (defn game-over?
