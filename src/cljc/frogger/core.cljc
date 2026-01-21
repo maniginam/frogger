@@ -37,11 +37,13 @@
   (let [frog (:frog game-state)
         obstacles (:obstacles game-state)
         platforms (:platforms game-state)
-        goals (:goals game-state)]
+        goals (:goals game-state)
+        checkpoints (:checkpoints game-state)]
     (when frog
       (let [obstacle-hit (collision/check-obstacle-collisions frog obstacles)
             current-platform (collision/check-platform-collisions frog platforms)
             goal-reached (collision/check-goal-collisions frog goals)
+            checkpoint-reached (collision/check-checkpoint-collisions frog checkpoints)
             in-water? (movement/is-in-water-zone? (:y frog))
             drowned? (and in-water?
                           (not current-platform)
@@ -49,6 +51,7 @@
         {:obstacle-hit obstacle-hit
          :platform current-platform
          :goal-reached goal-reached
+         :checkpoint-reached checkpoint-reached
          :drowned? drowned?}))))
 
 (defn apply-platform-movement
@@ -63,7 +66,7 @@
 (defn handle-collision-results
   "Handles collision results and returns updated state."
   [game-state collision-results dt]
-  (let [{:keys [obstacle-hit platform goal-reached drowned?]} collision-results]
+  (let [{:keys [obstacle-hit platform goal-reached checkpoint-reached drowned?]} collision-results]
     (cond
       obstacle-hit
       (events/dispatch-event game-state (events/create-event :death :cause :obstacle))
@@ -75,13 +78,18 @@
       (let [goal-index (:index goal-reached)]
         (events/dispatch-event game-state (events/create-event :goal-reached :goal-index goal-index)))
 
-      platform
-      (-> game-state
-          (assoc-in [:frog :on-platform?] true)
-          (apply-platform-movement platform dt))
-
       :else
-      game-state)))
+      (let [state-after-checkpoint (if checkpoint-reached
+                                     (let [checkpoint-index (:index checkpoint-reached)]
+                                       (events/dispatch-event game-state
+                                                             (events/create-event :checkpoint-reached
+                                                                                  :checkpoint-index checkpoint-index)))
+                                     game-state)]
+        (if platform
+          (-> state-after-checkpoint
+              (assoc-in [:frog :on-platform?] true)
+              (apply-platform-movement platform dt))
+          state-after-checkpoint)))))
 
 (defn update-timer
   "Updates the game timer."

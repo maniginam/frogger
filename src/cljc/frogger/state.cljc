@@ -20,6 +20,7 @@
    :obstacles []
    :platforms []
    :goals []
+   :checkpoints []
    :score initial-score
    :lives initial-lives
    :level 1
@@ -76,6 +77,16 @@
   "Returns state with updated goals."
   [state goals]
   (assoc state :goals goals))
+
+(defn get-checkpoints
+  "Returns checkpoints from state."
+  [state]
+  (:checkpoints state))
+
+(defn set-checkpoints
+  "Returns state with updated checkpoints."
+  [state checkpoints]
+  (assoc state :checkpoints checkpoints))
 
 (defn add-score
   "Returns state with points added to score."

@@ -4,6 +4,7 @@
             [frogger.state :as state]
             [frogger.entities.frog :as frog]
             [frogger.entities.goal :as goal]
+            [frogger.entities.checkpoint :as checkpoint]
             [frogger.game.rules :as rules]))
 
 (defmulti handle-event
@@ -21,12 +22,38 @@
           (update :score + hop-score)))
     game-state))
 
+(defn- reset-frog-to-checkpoint-or-start
+  "Resets frog position to the last checkpoint if dying in water, otherwise to start."
+  [frog checkpoints cause]
+  (if (and (= cause :water)
+           (some :reached? checkpoints))
+    ;; Died in water and have a checkpoint - respawn at checkpoint
+    (if-let [respawn-pos (checkpoint/get-respawn-position checkpoints)]
+      (assoc frog
+             :x (:x respawn-pos)
+             :y (:y respawn-pos)
+             :facing :up
+             :direction nil
+             :on-platform? false
+             :dead? false
+             :reached-goal? false)
+      (frog/reset-position frog))
+    ;; Died from obstacle/timeout or no checkpoint - respawn at start
+    (frog/reset-position frog)))
+
 (defmethod handle-event :death
   [game-state {:keys [cause]}]
+  (let [checkpoints (:checkpoints game-state)]
+    (-> game-state
+        (update :lives dec)
+        (update :frog #(reset-frog-to-checkpoint-or-start % checkpoints cause))
+        (assoc :death-cause cause))))
+
+(defmethod handle-event :checkpoint-reached
+  [game-state {:keys [checkpoint-index]}]
   (-> game-state
-      (update :lives dec)
-      (update :frog frog/reset-position)
-      (assoc :death-cause cause)))
+      (update :lives + checkpoint/checkpoint-bonus-lives)
+      (update-in [:checkpoints checkpoint-index] checkpoint/mark-checkpoint-reached)))
 
 (defmethod handle-event :goal-reached
   [game-state {:keys [goal-index]}]
@@ -49,6 +76,7 @@
         (update :level inc)
         (assoc :time-remaining 60000)
         (update :goals goal/reset-goals)
+        (update :checkpoints checkpoint/reset-checkpoints)
         (update :frog frog/reset-position))))
 
 (defmethod handle-event :game-over

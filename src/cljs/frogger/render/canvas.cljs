@@ -75,17 +75,18 @@
 (defn draw-obstacles [ctx obstacles theme-id]
   (let [theme (themes/get-theme theme-id)]
     (doseq [obstacle obstacles]
-      (let [{:keys [x y width height obstacle-type]} obstacle
+      (let [{:keys [x y width height obstacle-type vx]} obstacle
             color (or (get-in theme [:obstacles obstacle-type])
-                      (:color obstacle))]
+                      (:color obstacle))
+            direction (if (pos? vx) :right :left)]
         (case obstacle-type
-          :car (sprites/draw-car-sprite ctx x y width height color)
-          :truck (sprites/draw-truck-sprite ctx x y width height color)
-          :bus (sprites/draw-bus-sprite ctx x y width height color)
-          :motorcycle (sprites/draw-motorcycle-sprite ctx x y width height color)
-          :race-car (sprites/draw-race-car-sprite ctx x y width height color)
+          :car (sprites/draw-car-sprite ctx x y width height color :direction direction)
+          :truck (sprites/draw-truck-sprite ctx x y width height color :direction direction)
+          :bus (sprites/draw-bus-sprite ctx x y width height color :direction direction)
+          :motorcycle (sprites/draw-motorcycle-sprite ctx x y width height color :direction direction)
+          :race-car (sprites/draw-race-car-sprite ctx x y width height color :direction direction)
           ;; Default fallback for unknown types
-          (sprites/draw-car-sprite ctx x y width height color))))))
+          (sprites/draw-car-sprite ctx x y width height color :direction direction))))))
 
 (defn draw-platforms [ctx platforms theme-id]
   (let [theme (themes/get-theme theme-id)]
@@ -114,6 +115,11 @@
           ;; Default fallback
           (draw-rect ctx {:x x :y y :width width :height height :color color}))))))
 
+(defn draw-checkpoints [ctx checkpoints]
+  (doseq [checkpoint checkpoints]
+    (let [{:keys [x y width height reached? color]} checkpoint]
+      (sprites/draw-target-sprite ctx x y width height color reached?))))
+
 (defn draw-frog [ctx frog]
   (when frog
     (let [{:keys [x y width height color invincible?]} frog
@@ -125,11 +131,12 @@
 
 (defn render [game-state]
   (when-let [ctx (get-ctx)]
-    (let [{:keys [frog obstacles platforms goals theme-id]} game-state]
+    (let [{:keys [frog obstacles platforms goals checkpoints theme-id]} game-state]
       (clear-canvas ctx)
       (draw-background ctx theme-id)
       (draw-road-lines ctx theme-id)
       (draw-goals ctx goals theme-id)
+      (draw-checkpoints ctx checkpoints)
       (draw-platforms ctx platforms theme-id)
       (draw-obstacles ctx obstacles theme-id)
       (draw-frog ctx frog))))

@@ -281,9 +281,14 @@
     (.fill ctx)))
 
 (defn draw-car-sprite
-  "Draws a detailed sedan-style car sprite."
-  [ctx x y width height color]
-  (let [cx (+ x (/ width 2))
+  "Draws a detailed sedan-style car sprite. Direction: :left or :right (default :left)"
+  [ctx orig-x y width height color & {:keys [direction] :or {direction :left}}]
+  (when (= direction :right)
+    (.save ctx)
+    (.translate ctx (+ orig-x width) 0)
+    (.scale ctx -1 1))
+  (let [x (if (= direction :right) 0 orig-x)
+        cx (+ x (/ width 2))
         cy (+ y (/ height 2))
         scale-x (/ width 40)
         scale-y (/ height 36)
@@ -377,12 +382,19 @@
     (.fill ctx)
     (.beginPath ctx)
     (.arc ctx (+ x width (* -10 scale-x)) (+ y (* 28 scale-y)) (* 3 scale-x) 0 (* 2 js/Math.PI))
-    (.fill ctx)))
+    (.fill ctx))
+  (when (= direction :right)
+    (.restore ctx)))
 
 (defn draw-truck-sprite
-  "Draws a detailed truck/pickup sprite."
-  [ctx x y width height color]
-  (let [scale-x (/ width 80)
+  "Draws a detailed truck/pickup sprite. Direction: :left or :right (default :left)"
+  [ctx orig-x y width height color & {:keys [direction] :or {direction :left}}]
+  (when (= direction :right)
+    (.save ctx)
+    (.translate ctx (+ orig-x width) 0)
+    (.scale ctx -1 1))
+  (let [x (if (= direction :right) 0 orig-x)
+        scale-x (/ width 80)
         scale-y (/ height 36)
         dark-color (darken-color color 0.3)]
 
@@ -466,12 +478,19 @@
     (.fill ctx)
     (.beginPath ctx)
     (.arc ctx (+ x width (* -14 scale-x)) (+ y (* 28 scale-y)) (* 3.5 scale-x) 0 (* 2 js/Math.PI))
-    (.fill ctx)))
+    (.fill ctx))
+  (when (= direction :right)
+    (.restore ctx)))
 
 (defn draw-bus-sprite
-  "Draws a detailed bus sprite."
-  [ctx x y width height color]
-  (let [scale-x (/ width 120)
+  "Draws a detailed bus sprite. Direction: :left or :right (default :left)"
+  [ctx orig-x y width height color & {:keys [direction] :or {direction :left}}]
+  (when (= direction :right)
+    (.save ctx)
+    (.translate ctx (+ orig-x width) 0)
+    (.scale ctx -1 1))
+  (let [x (if (= direction :right) 0 orig-x)
+        scale-x (/ width 120)
         scale-y (/ height 36)
         dark-color (darken-color color 0.25)
         light-color (lighten-color color 0.15)]
@@ -552,12 +571,19 @@
     (.fill ctx)
     (.beginPath ctx)
     (.arc ctx (+ x width (* -20 scale-x)) (+ y (* 28 scale-y)) (* 3 scale-x) 0 (* 2 js/Math.PI))
-    (.fill ctx)))
+    (.fill ctx))
+  (when (= direction :right)
+    (.restore ctx)))
 
 (defn draw-motorcycle-sprite
-  "Draws a detailed motorcycle sprite."
-  [ctx x y width height color]
-  (let [cx (+ x (/ width 2))
+  "Draws a detailed motorcycle sprite. Direction: :left or :right (default :left)"
+  [ctx orig-x y width height color & {:keys [direction] :or {direction :left}}]
+  (when (= direction :right)
+    (.save ctx)
+    (.translate ctx (+ orig-x width) 0)
+    (.scale ctx -1 1))
+  (let [x (if (= direction :right) 0 orig-x)
+        cx (+ x (/ width 2))
         scale-x (/ width 30)
         scale-y (/ height 36)
         dark-color (darken-color color 0.3)]
@@ -644,12 +670,19 @@
     (set! (.-fillStyle ctx) "#757575")
     (.beginPath ctx)
     (.roundRect ctx (+ x (* 16 scale-x)) (+ y (* 24 scale-y)) (* 10 scale-x) (* 3 scale-y) (* 1 scale-x))
-    (.fill ctx)))
+    (.fill ctx))
+  (when (= direction :right)
+    (.restore ctx)))
 
 (defn draw-race-car-sprite
-  "Draws a detailed race car/sports car sprite."
-  [ctx x y width height color]
-  (let [cx (+ x (/ width 2))
+  "Draws a detailed race car/sports car sprite. Direction: :left or :right (default :left)"
+  [ctx orig-x y width height color & {:keys [direction] :or {direction :left}}]
+  (when (= direction :right)
+    (.save ctx)
+    (.translate ctx (+ orig-x width) 0)
+    (.scale ctx -1 1))
+  (let [x (if (= direction :right) 0 orig-x)
+        cx (+ x (/ width 2))
         scale-x (/ width 50)
         scale-y (/ height 36)
         dark-color (darken-color color 0.25)
@@ -739,7 +772,9 @@
     (.fill ctx)
     (.beginPath ctx)
     (.arc ctx (+ x width (* -12 scale-x)) (+ y (* 26 scale-y)) (* 3 scale-x) 0 (* 2 js/Math.PI))
-    (.fill ctx)))
+    (.fill ctx))
+  (when (= direction :right)
+    (.restore ctx)))
 
 (defn draw-log-sprite
   "Draws a detailed log sprite with wood grain and end caps."
@@ -855,3 +890,50 @@
     (.beginPath ctx)
     (.ellipse ctx cx cy (* radius-x 0.95) (* radius-y 0.95) 0 2.5 5.5)
     (.stroke ctx)))
+
+(defn draw-target-sprite
+  "Draws a target/bullseye checkpoint sprite with concentric rings."
+  [ctx x y width height color reached?]
+  (let [cx (+ x (/ width 2))
+        cy (+ y (/ height 2))
+        radius (/ (min width height) 2.2)
+        ring-colors (if reached?
+                      ;; Greyed out when reached
+                      ["#666666" "#888888" "#666666" "#888888" "#AAAAAA"]
+                      ;; Red/white target rings
+                      ["#D32F2F" "#FFFFFF" "#D32F2F" "#FFFFFF" "#D32F2F"])]
+
+    ;; Draw shadow/glow underneath
+    (when (not reached?)
+      (set! (.-shadowColor ctx) "#FF5722")
+      (set! (.-shadowBlur ctx) 8))
+
+    ;; Draw concentric rings from outside in
+    (doseq [[idx ring-color] (map-indexed vector ring-colors)]
+      (let [ring-radius (* radius (- 1 (* idx 0.18)))]
+        (set! (.-fillStyle ctx) ring-color)
+        (.beginPath ctx)
+        (.arc ctx cx cy ring-radius 0 (* 2 js/Math.PI))
+        (.fill ctx)))
+
+    ;; Reset shadow
+    (set! (.-shadowColor ctx) "transparent")
+    (set! (.-shadowBlur ctx) 0)
+
+    ;; Draw border ring
+    (set! (.-strokeStyle ctx) (if reached? "#444444" "#B71C1C"))
+    (set! (.-lineWidth ctx) 2)
+    (.beginPath ctx)
+    (.arc ctx cx cy radius 0 (* 2 js/Math.PI))
+    (.stroke ctx)
+
+    ;; Draw a checkmark if reached
+    (when reached?
+      (set! (.-strokeStyle ctx) "#4CAF50")
+      (set! (.-lineWidth ctx) 3)
+      (set! (.-lineCap ctx) "round")
+      (.beginPath ctx)
+      (.moveTo ctx (- cx (* radius 0.3)) cy)
+      (.lineTo ctx (- cx (* radius 0.05)) (+ cy (* radius 0.25)))
+      (.lineTo ctx (+ cx (* radius 0.35)) (- cy (* radius 0.2)))
+      (.stroke ctx))))

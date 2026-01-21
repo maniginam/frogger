@@ -56,6 +56,11 @@
   [frog goals]
   (find-first-collision frog (filter #(not (:reached? %)) goals)))
 
+(defn check-checkpoint-collisions
+  "Checks frog collision with checkpoints. Returns the checkpoint if reached (and not already reached), nil otherwise."
+  [frog checkpoints]
+  (find-first-collision frog (filter #(not (:reached? %)) checkpoints)))
+
 (defn point-in-bounds?
   "Returns true if point is within bounds."
   [{:keys [px py]} {:keys [x y width height]}]

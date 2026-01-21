@@ -4,6 +4,7 @@
             [frogger.entities.obstacle :as obstacle]
             [frogger.entities.platform :as platform]
             [frogger.entities.goal :as goal]
+            [frogger.entities.checkpoint :as checkpoint]
             [frogger.game.rules :as rules]))
 
 (def base-obstacle-speed 80)
@@ -61,12 +62,18 @@
   []
   (goal/create-goals))
 
+(defn generate-checkpoints
+  "Generates checkpoints in the middle safe zone."
+  []
+  (checkpoint/create-checkpoints))
+
 (defn generate-level
   "Generates a complete level with all entities."
   [level]
   {:obstacles (vec (generate-road-obstacles level))
    :platforms (vec (generate-river-platforms level))
-   :goals (generate-goals)})
+   :goals (generate-goals)
+   :checkpoints (generate-checkpoints)})
 
 (defn apply-level-to-state
   "Applies generated level entities to game state."
@@ -76,6 +83,7 @@
         (assoc :obstacles (:obstacles level-data))
         (assoc :platforms (:platforms level-data))
         (assoc :goals (:goals level-data))
+        (assoc :checkpoints (:checkpoints level-data))
         (assoc :level level-num))))
 
 (defn reset-level

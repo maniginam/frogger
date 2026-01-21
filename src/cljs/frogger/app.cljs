@@ -9,7 +9,8 @@
             [frogger.ui.menu :as menu]
             [frogger.ui.hud :as hud]
             [frogger.ui.screens :as screens]
-            [frogger.game.events :as events]))
+            [frogger.game.events :as events]
+            [frogger.audio.system :as audio]))
 
 (defonce app-state (atom {:screen :menu
                           :character-id :forest
@@ -23,6 +24,8 @@
            :theme-id theme-id)
     (menu/hide-menu!)
     (hud/show-hud!)
+    (audio/resume-audio!)
+    (audio/start-theme-music! theme-id)
     (game-loop/set-game-state! game-state)
     (game-loop/start-loop!)))
 
@@ -38,6 +41,7 @@
   (effects/clear-effects!)
   (screens/hide-game-over!)
   (hud/hide-hud!)
+  (audio/stop-music!)
   (menu/show-menu!)
   (swap! app-state assoc :screen :menu))
 
@@ -60,22 +64,58 @@
                (toggle-pause!))
       nil)))
 
+(defn- frog-moved?
+  "Check if frog position changed significantly (a hop)."
+  [old-state new-state]
+  (when (and old-state new-state (:frog old-state) (:frog new-state))
+    (let [old-frog (:frog old-state)
+          new-frog (:frog new-state)
+          dx (- (:x new-frog) (:x old-frog))
+          dy (- (:y new-frog) (:y old-frog))]
+      ;; Consider it a hop if moved more than half a cell (not just platform drift)
+      (or (> (js/Math.abs dx) 20)
+          (> (js/Math.abs dy) 20)))))
+
+(defn- goals-changed?
+  "Check if a new goal was reached."
+  [old-state new-state]
+  (let [old-reached (count (filter :reached? (:goals old-state)))
+        new-reached (count (filter :reached? (:goals new-state)))]
+    (> new-reached old-reached)))
+
 (defn watch-game-state []
   (add-watch game-loop/game-state-atom :app-watcher
              (fn [_ _ old-state new-state]
                (when (and old-state new-state)
+                 ;; Game over
                  (when (and (not= (:screen old-state) :game-over)
                             (= (:screen new-state) :game-over))
                    (game-loop/stop-loop!)
+                   (audio/stop-music!)
+                   (audio/play-game-over-sound)
                    (screens/show-game-over! (:score new-state)))
-                 (when (and (< (:lives old-state) (:lives new-state) 0)
+                 ;; Frog died (lost a life)
+                 (when (and (> (:lives old-state) (:lives new-state))
                             (pos? (:lives new-state)))
                    (effects/trigger-death-effect! (:frog old-state))
+                   (audio/play-death-sound (:character-id new-state))
                    (hud/flash-lives!))
+                 ;; Score increased (checkpoint or time bonus)
                  (when (> (:score new-state) (:score old-state))
-                   (hud/flash-score!))))))
+                   (hud/flash-score!))
+                 ;; Goal reached
+                 (when (goals-changed? old-state new-state)
+                   (audio/play-goal-sound))
+                 ;; Level complete
+                 (when (and (not= (:level old-state) (:level new-state))
+                            (> (:level new-state) (:level old-state)))
+                   (audio/play-level-complete-sound))
+                 ;; Frog hopped
+                 (when (frog-moved? old-state new-state)
+                   (audio/play-hop-sound (:character-id new-state)))))))
 
 (defn init-app! []
+  (audio/init-audio!)
   (keyboard/setup-keyboard-listeners!)
   (keyboard/set-input-callback! handle-input-event)
   (menu/init-menu! start-game!)
