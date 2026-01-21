@@ -8,60 +8,60 @@
       (should-not-be-nil p/Entity))
 
     (it "should have get-position method"
-      (should-not-be-nil (:get-position (:sigs p/Entity))))
+      (should (fn? p/get-position)))
 
     (it "should have get-bounds method"
-      (should-not-be-nil (:get-bounds (:sigs p/Entity))))
+      (should (fn? p/get-bounds)))
 
     (it "should have get-type method"
-      (should-not-be-nil (:get-type (:sigs p/Entity)))))
+      (should (fn? p/get-type))))
 
   (context "Movable protocol"
     (it "should be defined"
       (should-not-be-nil p/Movable))
 
     (it "should have move method"
-      (should-not-be-nil (:move (:sigs p/Movable))))
+      (should (fn? p/move)))
 
     (it "should have get-velocity method"
-      (should-not-be-nil (:get-velocity (:sigs p/Movable)))))
+      (should (fn? p/get-velocity))))
 
   (context "Collidable protocol"
     (it "should be defined"
       (should-not-be-nil p/Collidable))
 
     (it "should have collides? method"
-      (should-not-be-nil (:collides? (:sigs p/Collidable))))
+      (should (fn? p/collides?)))
 
     (it "should have on-collision method"
-      (should-not-be-nil (:on-collision (:sigs p/Collidable)))))
+      (should (fn? p/on-collision))))
 
   (context "Ability protocol"
     (it "should be defined"
       (should-not-be-nil p/Ability))
 
     (it "should have can-activate? method"
-      (should-not-be-nil (:can-activate? (:sigs p/Ability))))
+      (should (fn? p/can-activate?)))
 
     (it "should have activate method"
-      (should-not-be-nil (:activate (:sigs p/Ability))))
+      (should (fn? p/activate)))
 
     (it "should have get-ability-state method"
-      (should-not-be-nil (:get-ability-state (:sigs p/Ability)))))
+      (should (fn? p/get-ability-state))))
 
   (context "Renderable protocol"
     (it "should be defined"
       (should-not-be-nil p/Renderable))
 
     (it "should have get-sprite-key method"
-      (should-not-be-nil (:get-sprite-key (:sigs p/Renderable))))
+      (should (fn? p/get-sprite-key)))
 
     (it "should have get-color method"
-      (should-not-be-nil (:get-color (:sigs p/Renderable)))))
+      (should (fn? p/get-color))))
 
   (context "Updateable protocol"
     (it "should be defined"
       (should-not-be-nil p/Updateable))
 
     (it "should have update-entity method"
-      (should-not-be-nil (:update-entity (:sigs p/Updateable))))))
+      (should (fn? p/update-entity)))))

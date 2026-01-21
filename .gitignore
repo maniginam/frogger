@@ -6,6 +6,7 @@ node_modules/
 
 # Build output (keep for deployment)
 # resources/public/js/cljs-runtime/
+out/
 
 # IDE
 .idea/

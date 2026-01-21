@@ -21,4 +21,10 @@
          :ns-regexp "-spec$"
          :runner-ns frogger.test-runner
          :devtools {:http-root "resources/public/js/test"
-                    :http-port 8081}}}}
+                    :http-port 8081}}
+
+  :node-test {:target :node-script
+              :output-to "out/node-tests.js"
+              :main frogger.test-runner/run-all
+              :devtools {:after-load frogger.test-runner/run-all}}}}
+
